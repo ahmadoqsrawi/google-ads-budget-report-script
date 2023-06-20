@@ -1,118 +1,95 @@
 function main() {
-  // Retrieve the managed account IDs
-  var accountIds = getManagedAccountIds();
-  
-  // Generate the campaign budget report for the account IDs
-  var report = generateCampaignBudgetReport(accountIds);
-  
-  // Create a new spreadsheet
-  var spreadsheet = createSpreadsheet();
-  
-  // Write the report to the spreadsheet
-  writeReportToSpreadsheet(report, spreadsheet);
+  const spreadsheetName = "Budget Report";
+
+  // Get the last day, last week, and last month dates
+  const lastDay = getLastDay();
+  const lastWeek = getLastWeek();
+  const lastMonth = getLastMonth();
+
+  // Get the budget data for each date range
+  const budgetDataLastDay = getBudgetData(lastDay, lastDay);
+  const budgetDataLastWeek = getBudgetData(lastWeek, lastDay);
+  const budgetDataLastMonth = getBudgetData(lastMonth, lastDay);
+
+  // Create a new Google Sheet
+  const spreadsheet = SpreadsheetApp.create(spreadsheetName);
+  const sheet = spreadsheet.getActiveSheet();
+
+  // Write headers to the sheet
+  sheet.getRange(1, 1).setValue("Date Range");
+  sheet.getRange(1, 2).setValue("Campaign");
+  sheet.getRange(1, 3).setValue("Budget");
+  sheet.getRange(1, 4).setValue("Spent");
+
+  // Write budget data for last day to the sheet
+  writeBudgetDataToSheet(sheet, 2, "Last Day", budgetDataLastDay);
+
+  // Write budget data for last week to the sheet
+  writeBudgetDataToSheet(sheet, budgetDataLastDay.length + 3, "Last Week", budgetDataLastWeek);
+
+  // Write budget data for last month to the sheet
+  writeBudgetDataToSheet(sheet, budgetDataLastDay.length + budgetDataLastWeek.length + 4, "Last Month", budgetDataLastMonth);
+
+  Logger.log("Budget report created. Spreadsheet ID: " + spreadsheet.getId());
 }
 
-function getManagedAccountIds() {
-  // Get the iterator for managed accounts
-  var accountIterator = MccApp.accounts().get();
-  var accountIds = [];
-  
-  // Iterate over the accounts and collect the account IDs
-  while (accountIterator.hasNext()) {
-    var account = accountIterator.next();
-    accountIds.push(account.getCustomerId());
-  }
-  
-  return accountIds;
+function getLastDay() {
+  const today = new Date();
+  const lastDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+  return formatDate(lastDay);
 }
 
-function generateCampaignBudgetReport(accountIds) {
-  // Generate the campaign budget report for each account ID
-  return accountIds.map(function(accountId) {
-    var lastDaySpend = getCampaignBudgetSpend(accountId, getLastNDays(1));
-    var lastWeekSpend = getCampaignBudgetSpend(accountId, getLastNDays(7));
-    var lastMonthSpend = getCampaignBudgetSpend(accountId, getLastNMonths(1));
-    
-    // Return an object containing the account ID and spend data
-    return {
-      cid: accountId,
-      lastDaySpend: lastDaySpend,
-      lastWeekSpend: lastWeekSpend,
-      lastMonthSpend: lastMonthSpend
-    };
-  });
+function getLastWeek() {
+  const today = new Date();
+  const lastWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
+  return formatDate(lastWeek);
 }
 
-function getCampaignBudgetSpend(accountId, dateRange) {
-  // Retrieve the campaign budget spend for the specified account and date range
-  var accountSelector = AdsApp.accounts().withIds([accountId]);
-  var accountReport = accountSelector.forDateRange(dateRange.start, dateRange.end).getReport(
-    "SELECT Cost " +
-    "FROM CAMPAIGN_PERFORMANCE_REPORT " +
-    "WHERE CampaignStatus = ENABLED");
-  
-  var rows = accountReport.rows();
-  var spend = 0;
-  
-  // Iterate over the report rows and calculate the total spend
-  while (rows.hasNext()) {
-    var row = rows.next();
-    spend += parseFloat(row["Cost"]);
-  }
-  
-  return spend.toFixed(2);
-}
-
-function getLastNDays(n) {
-  // Get the start and end dates for the last N days
-  var endDate = new Date();
-  var startDate = new Date(endDate.getTime() - (n * 24 * 60 * 60 * 1000));
-  
-  return {
-    start: formatDate(startDate),
-    end: formatDate(endDate)
-  };
-}
-
-function getLastNMonths(n) {
-  // Get the start and end dates for the last N months
-  var endDate = new Date();
-  var startDate = new Date(endDate.getFullYear(), endDate.getMonth() - n, 1);
-  
-  return {
-    start: formatDate(startDate),
-    end: formatDate(endDate)
-  };
+function getLastMonth() {
+  const today = new Date();
+  const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+  return formatDate(lastMonth);
 }
 
 function formatDate(date) {
-  // Format the date as "YYYY-MM-DD"
-  var year = date.getFullYear();
-  var month = ("0" + (date.getMonth() + 1)).slice(-2);
-  var day = ("0" + date.getDate()).slice(-2);
-  
-  return year + "-" + month + "-" + day;
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  return year + month + day;
 }
 
-function createSpreadsheet() {
-  // Create a new spreadsheet for the campaign budget report
-  var spreadsheet = SpreadsheetApp.create("Campaign Budget Report");
-  var sheet = spreadsheet.getActiveSheet();
-  
-  // Set column headers
-  sheet.getRange("A1:D1").setValues([["CID", "Last Day Spend", "Last Week Spend", "Last Month Spend"]]);
-  
-  return spreadsheet;
+function getBudgetData(startDate, endDate) {
+  const campaignIterator = AdsApp.campaigns().get();
+  const budgetData = [];
+
+  while (campaignIterator.hasNext()) {
+    const campaign = campaignIterator.next();
+    const campaignName = campaign.getName();
+    const budget = campaign.getBudget().getAmount();
+    const stats = campaign.getStatsFor(startDate, endDate);
+    const spent = stats.getCost();
+
+    budgetData.push({
+      campaign: campaignName,
+      budget: budget,
+      spent: spent
+    });
+  }
+
+  return budgetData;
 }
 
-function writeReportToSpreadsheet(report, spreadsheet) {
-  var sheet = spreadsheet.getActiveSheet();
-  
-  // Prepare the report data as a 2D array
-  var data = report.map(function(row) {
-    return [row.cid, row.lastDaySpend, row.lastWeekSpend, row.lastMonthSpend];
-  });
-  
-  // Write the report data to the spreadsheet
-  sheet.getRange(2, 1, data.length, data[0].length).setValues(data);
+function writeBudgetDataToSheet(sheet, startRow, dateRange, budgetData) {
+  sheet.getRange(startRow, 1).setValue(dateRange);
+
+  for (let i = 0; i < budgetData.length; i++) {
+    const row = startRow + i;
+    const campaign = budgetData[i].campaign;
+    const budget = budgetData[i].budget;
+    const spent = budgetData[i].spent;
+
+    sheet.getRange(row, 2).setValue(campaign);
+    sheet.getRange(row, 3).setValue(budget);
+    sheet.getRange(row, 4).setValue(spent);
+  }
 }
