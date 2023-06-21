@@ -34,15 +34,15 @@ SOFTWARE.
 - Google Ads API Access: Enable API access for your Google Ads account by following the steps outlined in the Google Ads API documentation.
 
 ### Usage
-1- Click on "Tools & Settings" in the menu bar.
-2- Under "Bulk Actions," select "Scripts."
-3- In the Scripts editor, click on the "+" button to create a new script.
-4- Paste the provided code into the editor.
-5- Click on the "Save" button to save the script.
-6- Click on the "Authorize" button to grant the necessary permissions for the script to access your Google Ads account data.
-7- After authorizing, click on the "Run" button to execute the script and generate the budget report.
-8- To receive the report regularly, click on the "Current project's triggers" button (clock icon) in the Scripts editor.
-9- Set the frequency to "Hourly" to receive the report every hour. Adjust the frequency as desired for your reporting needs.
-10- Save the trigger settings, and the script will run automatically according to the defined frequency.
-11- The budget report will be generated and stored in a Google Sheet.
-12- To access the generated report, go to your Google Sheets account.
+1. Click on "Tools & Settings" in the menu bar.
+2. Under "Bulk Actions," select "Scripts."
+3. In the Scripts editor, click on the "+" button to create a new script.
+4. Paste the provided code into the editor.
+5. Click on the "Save" button to save the script.
+6. Click on the "Authorise" button to grant the necessary permissions for the script to access your Google Ads account data.
+7. After authorising, click on the "Run" button to execute the script and generate the budget report.
+8. To receive the report regularly, click on the "Current project's triggers" button (clock icon) in the Scripts editor.
+9. Set the frequency to "Hourly" to receive the report every hour. Adjust the frequency as desired for your reporting needs.
+10. Save the trigger settings, and the script will run automatically according to the defined frequency.
+11. The budget report will be generated and stored in a Google Sheet.
+12. To access the generated report, go to your Google Sheets account.
