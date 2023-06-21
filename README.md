@@ -29,9 +29,9 @@ SOFTWARE.
 ### Prerequisites
 **Before using this script, you need to set up the following:**
 
--Google Ads Account: You should have an active Google Ads account with campaigns and budgets set up.
--Google Sheets: Access to a Google Sheets document where you want to generate the budget report.
--Google Ads API Access: Enable API access for your Google Ads account by following the steps outlined in the Google Ads API documentation.
+- Google Ads Account: You should have an active Google Ads account with campaigns and budgets set up.
+- Google Sheets: Access to a Google Sheets document where you want to generate the budget report.
+- Google Ads API Access: Enable API access for your Google Ads account by following the steps outlined in the Google Ads API documentation.
 
 ### Usage
 
