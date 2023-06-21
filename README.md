@@ -34,7 +34,6 @@ SOFTWARE.
 - Google Ads API Access: Enable API access for your Google Ads account by following the steps outlined in the Google Ads API documentation.
 
 ### Usage
-
 1- Click on "Tools & Settings" in the menu bar.
 2- Under "Bulk Actions," select "Scripts."
 3- In the Scripts editor, click on the "+" button to create a new script.
